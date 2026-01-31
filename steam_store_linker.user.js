@@ -1,0 +1,455 @@
+// ==UserScript==
+// @name         Steam Store Linker (Humble & Fanatical)
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  Adds Steam links and ownership status to Humble Bundle and Fanatical
+// @author       gbzret4d
+// @match        https://www.humblebundle.com/*
+// @match        https://www.fanatical.com/*
+// @icon         https://store.steampowered.com/favicon.ico
+// @updateURL    https://raw.githubusercontent.com/gbzret4d/steam-store-linker/main/steam_store_linker.user.js
+// @downloadURL  https://raw.githubusercontent.com/gbzret4d/steam-store-linker/main/steam_store_linker.user.js
+// @homepageURL  https://github.com/gbzret4d/steam-store-linker
+// @connect      store.steampowered.com
+// @connect      www.protondb.com
+// @grant        GM_xmlhttpRequest
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_addStyle
+// ==/UserScript==
+
+(function () {
+    'use strict';
+
+    // --- Configuration ---
+    const SITE_CONFIG = {
+        'humblebundle.com': {
+            name: 'Humble Bundle',
+            ignoreUrl: '/books/',
+            selectors: [
+                { container: '.tier-item-view', title: '.item-title' },
+                { container: '.entity-block-container', title: '.entity-title' },
+                { container: '.entity-content', title: '.entity-title' },
+                { container: '.product-item', title: '.product-title' },
+                { container: '.content-choice', title: '.content-choice-title' },
+                { container: '.game-box', title: '.game-box-title' },
+                { container: '.pay-what-you-want-row', title: 'h2' },
+                { container: '.details-heading', title: 'h1' },
+                { container: '.product-header', title: 'h1' },
+                { container: '.product-hero', title: 'h1' },
+                { container: '[class*="product-detail"]', title: 'h1' }
+            ],
+            isValidGameElement: (element, nameEl) => {
+                const link = element.closest('a') || element.querySelector('a');
+                if (link && link.href) {
+                    if (link.href.includes('/store/search') || link.href.includes('/store/promo')) {
+                        return false;
+                    }
+                }
+                const text = nameEl.textContent.trim().toLowerCase();
+                const blocklist = ['deals under', 'great on', 'browse by', 'top selling', 'new on humble', 'coming soon'];
+                if (blocklist.some(term => text.includes(term))) return false;
+                return true;
+            }
+        },
+        'fanatical.com': {
+            name: 'Fanatical',
+            selectors: [
+                { container: '.HitCard', title: '.hitCardStripe__seoName' },
+                { container: '.PickAndMixCard', title: '.card-product-name' },
+                { container: '.product-det', title: 'h1.product-name' },
+                { container: '.product-container', title: 'h1.product-name' },
+                { container: 'div[class*="ProductDetail"]', title: 'h1.product-name' },
+                { container: '.name-banner-container', title: 'h1.product-name' }
+            ],
+            ignoreUrl: null
+        },
+
+    };
+
+    function getCurrentSiteConfig() {
+        const hostname = window.location.hostname;
+        for (const domain in SITE_CONFIG) {
+            if (hostname.includes(domain)) return SITE_CONFIG[domain];
+        }
+        return null;
+    }
+
+    const currentConfig = getCurrentSiteConfig();
+    if (!currentConfig) {
+        console.log('[Steam Linker] Site not supported');
+        return;
+    }
+
+    if (currentConfig.ignoreUrl && window.location.href.includes(currentConfig.ignoreUrl)) {
+        console.log(`[Steam Linker] Ignoring URL pattern: ${currentConfig.ignoreUrl}`);
+        return;
+    }
+
+    // --- API & Constants ---
+    const STEAM_USERDATA_API = 'https://store.steampowered.com/dynamicstore/userdata/';
+    const STEAM_SEARCH_API = 'https://store.steampowered.com/search/results/?json=1&term=';
+    const PROTONDB_API = 'https://www.protondb.com/api/v1/reports/summaries/';
+    const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+    // Styles
+    const css = `
+        .ssl-link {
+            display: inline-block;
+            margin-top: 5px;
+            font-size: 11px;
+            text-decoration: none;
+            color: #c7d5e0;
+            background: #171a21;
+            padding: 2px 4px;
+            border-radius: 2px;
+            white-space: nowrap;
+            line-height: 1.2;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            z-index: 999;
+            position: relative;
+        }
+        .ssl-link:hover { color: #fff; background: #2a475e; }
+        .ssl-link span { margin-right: 4px; padding-right: 4px; border-right: 1px solid #3c3d3e; }
+        .ssl-link span:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+        
+        .ssl-owned { color: #a4d007; font-weight: bold; }
+        .ssl-wishlist { color: #66c0f4; font-weight: bold; }
+        .ssl-ignored { color: #d9534f; }
+        
+        .ssl-container-owned { 
+            opacity: 1 !important; 
+            filter: grayscale(0%) !important; 
+            border: 2px solid #4c6b22 !important; 
+            box-shadow: inset 0 0 15px rgba(76, 107, 34, 0.6); 
+            transition: all 0.2s; 
+        }
+        .ssl-container-owned:hover { 
+            box-shadow: inset 0 0 20px rgba(76, 107, 34, 0.8), 0 0 10px rgba(76, 107, 34, 0.4) !important; 
+        }
+        .ssl-container-wishlist { 
+            border: 2px solid #66c0f4 !important; 
+            box-shadow: 0 0 10px rgba(102, 192, 244, 0.3) !important; 
+            border-radius: 4px; 
+        }
+        .ssl-container-ignored { 
+            border: 2px solid #d9534f !important; 
+            opacity: 0.5; 
+        }
+
+        #ssl-stats {
+            position: fixed; bottom: 10px; right: 10px;
+            background: rgba(23, 26, 33, 0.95);
+            color: #c7d5e0; padding: 10px; border-radius: 4px;
+            z-index: 10000; font-size: 12px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            border: 1px solid #2a475e;
+            pointer-events: none;
+            opacity: 0.8; transition: opacity 0.3s;
+        }
+        #ssl-stats:hover { opacity: 1; pointer-events: auto; }
+        #ssl-stats h4 { margin: 0 0 5px 0; color: #66c0f4; font-size: 13px; text-transform: uppercase; border-bottom: 1px solid #2a475e; padding-bottom: 2px; }
+        #ssl-stats div { display: flex; justify-content: space-between; margin-bottom: 2px; }
+        #ssl-stats span.val { font-weight: bold; color: #fff; margin-left: 10px; }
+    `;
+    GM_addStyle(css);
+
+    // --- State & UI ---
+    const stats = { total: 0, owned: 0, wishlist: 0, ignored: 0, missing: 0 };
+
+    function updateStatsUI() {
+        let panel = document.getElementById('ssl-stats');
+        if (!panel) {
+            panel = document.createElement('div');
+            panel.id = 'ssl-stats';
+            document.body.appendChild(panel);
+            window.addEventListener('beforeprint', () => { panel.style.display = 'none'; });
+            window.addEventListener('afterprint', () => { panel.style.display = 'block'; });
+        }
+
+        let html = `<h4>${currentConfig.name} Stats</h4>`;
+        const lines = [
+            { label: 'Total', val: stats.total },
+            { label: 'Owned', val: stats.owned },
+            { label: 'Wishlist', val: stats.wishlist },
+            { label: 'Ignored', val: stats.ignored },
+            { label: 'Missing', val: stats.missing }
+        ];
+        lines.forEach(l => { html += `<div>${l.label}: <span class="val">${l.val}</span></div>`; });
+        panel.innerHTML = html;
+    }
+
+    function createSteamLink(appData) {
+        if (!appData || !appData.id) return document.createElement('span');
+
+        const link = document.createElement('a');
+        link.className = 'ssl-link';
+        link.href = `https://store.steampowered.com/app/${appData.id}/`;
+        link.target = '_blank';
+        link.title = appData.name;
+
+        let html = `<span>STEAM</span>`;
+        if (appData.cards) html += `<span>CARDS</span>`;
+        if (appData.owned) html += `<span class="ssl-owned">OWNED</span>`;
+        else if (appData.wishlisted) html += `<span class="ssl-wishlist">WISHLIST</span>`;
+        else if (appData.ignored) html += `<span class="ssl-ignored">IGNORED</span>`;
+        if (appData.proton) html += `<span>${appData.proton} PROTON</span>`;
+
+        link.innerHTML = html;
+        return link;
+    }
+
+    // --- Helpers ---
+    class RequestQueue {
+        constructor(interval) {
+            this.interval = interval;
+            this.queue = [];
+            this.running = false;
+        }
+        add(fn) {
+            return new Promise((resolve, reject) => {
+                this.queue.push({ fn, resolve, reject });
+                this.process();
+            });
+        }
+        async process() {
+            if (this.running || this.queue.length === 0) return;
+            this.running = true;
+            while (this.queue.length > 0) {
+                const { fn, resolve, reject } = this.queue.shift();
+                try { resolve(await fn()); } catch (e) { reject(e); }
+                await new Promise(r => setTimeout(r, this.interval));
+            }
+            this.running = false;
+        }
+    }
+    const steamQueue = new RequestQueue(300);
+
+    function getStoredValue(key, defaultVal) {
+        try { return GM_getValue(key, defaultVal); } catch (e) { return defaultVal; }
+    }
+    function setStoredValue(key, val) {
+        try { GM_setValue(key, val); } catch (e) { }
+    }
+
+    // --- API Calls ---
+    async function fetchSteamUserData() {
+        const cached = getStoredValue('steam_userdata', null);
+        if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) return cached.data;
+
+        return steamQueue.add(() => new Promise((resolve) => {
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url: STEAM_USERDATA_API,
+                onload: (response) => {
+                    try {
+                        const data = JSON.parse(response.responseText);
+                        const userData = {
+                            ownedApps: data.rgOwnedPackages || [],
+                            wishlist: data.rgWishlist || [],
+                            ignored: data.rgIgnoredApps || {}
+                        };
+                        setStoredValue('steam_userdata', { data: userData, timestamp: Date.now() });
+                        resolve(userData);
+                    } catch (e) { resolve({ ownedApps: [], wishlist: [], ignored: {} }); }
+                },
+                onerror: () => resolve({ ownedApps: [], wishlist: [], ignored: {} })
+            });
+        }));
+    }
+
+    async function searchSteamGame(gameName) {
+        const cacheKey = 'steam_search_' + encodeURIComponent(gameName);
+        const cached = getStoredValue(cacheKey, null);
+        if (cached && (Date.now() - cached.timestamp < CACHE_TTL * 7)) return cached.data;
+
+        const cleanupRegex = /(:| -| –| —)?\s*(The\s+)?(Complete|Anthology|Collection|Definitive|Game of the Year|GOTY|Deluxe|Ultimate|Premium)(\s+(Edition|Cut|Content|Pack))?(\s+Bundle)?(\s*\.{3,})?/gi;
+        const cleanedName = gameName.replace(cleanupRegex, '').trim();
+
+        return steamQueue.add(() => new Promise((resolve) => {
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url: STEAM_SEARCH_API + encodeURIComponent(cleanedName),
+                onload: (response) => {
+                    try {
+                        const data = JSON.parse(response.responseText);
+                        if (data.items && data.items.length > 0) {
+                            let bestMatch = data.items[0];
+                            const exact = data.items.find(i => i.name.toLowerCase() === cleanedName.toLowerCase());
+                            if (exact) bestMatch = exact;
+
+                            if (!bestMatch.id) {
+                                resolve(null);
+                                return;
+                            }
+
+                            // Fuzzy Match Check
+                            const similarity = getSimilarity(cleanedName, bestMatch.name);
+                            if (similarity < 0.7) {
+                                console.log(`[Steam Linker] Low similarity (${(similarity * 100).toFixed(0)}%) for "${cleanedName}" -> "${bestMatch.name}". Ignoring.`);
+                                setStoredValue(cacheKey, { data: null, timestamp: Date.now() }); // Cache as "not found" to save API calls
+                                resolve(null);
+                                return;
+                            }
+
+                            const result = {
+                                id: bestMatch.id,
+                                name: bestMatch.name,
+                                tiny_image: bestMatch.tiny_image,
+                                price: bestMatch.price ? (bestMatch.price.final / 100) + ' ' + bestMatch.price.currency : null,
+                                discount: bestMatch.price ? bestMatch.price.discount_percent : 0,
+                            };
+                            setStoredValue(cacheKey, { data: result, timestamp: Date.now() });
+                            resolve(result);
+                        } else {
+                            setStoredValue(cacheKey, { data: null, timestamp: Date.now() });
+                            resolve(null);
+                        }
+                    } catch (e) { resolve(null); }
+                },
+                onerror: () => resolve(null)
+            });
+        }));
+    }
+
+    // --- Levenshtein Similarity Helper ---
+    function getSimilarity(s1, s2) {
+        const longer = s1.length > s2.length ? s1 : s2;
+        const shorter = s1.length > s2.length ? s2 : s1;
+        const longerLength = longer.length;
+        if (longerLength === 0) return 1.0;
+        return (longerLength - editDistance(longer.toLowerCase(), shorter.toLowerCase())) / longerLength;
+    }
+
+    function editDistance(s1, s2) {
+        s1 = s1.toLowerCase();
+        s2 = s2.toLowerCase();
+        const costs = new Array();
+        for (let i = 0; i <= s1.length; i++) {
+            let lastValue = i;
+            for (let j = 0; j <= s2.length; j++) {
+                if (i == 0) costs[j] = j;
+                else {
+                    if (j > 0) {
+                        let newValue = costs[j - 1];
+                        if (s1.charAt(i - 1) != s2.charAt(j - 1)) newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                        costs[j - 1] = lastValue;
+                        lastValue = newValue;
+                    }
+                }
+            }
+            if (i > 0) costs[s2.length] = lastValue;
+        }
+        return costs[s2.length];
+    }
+
+    async function fetchProtonDB(appId) {
+        const cacheKey = 'proton_' + appId;
+        const cached = getStoredValue(cacheKey, null);
+        if (cached && (Date.now() - cached.timestamp < CACHE_TTL * 7)) return cached.data;
+
+        return new Promise(resolve => {
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url: PROTONDB_API + appId,
+                onload: res => {
+                    try {
+                        const data = JSON.parse(res.responseText);
+                        const tier = data.trendingTier || data.tier;
+                        setStoredValue(cacheKey, { data: tier, timestamp: Date.now() });
+                        resolve(tier);
+                    } catch (e) { resolve(null); }
+                },
+                onerror: () => resolve(null)
+            });
+        });
+    }
+
+    // --- Processing ---
+    let userDataPromise = fetchSteamUserData();
+
+    async function processGameElement(element, nameSelector) {
+        if (element.dataset.sslProcessed) return;
+
+        const nameEl = element.querySelector(nameSelector);
+        if (!nameEl) return;
+
+        // Custom Validator
+        if (currentConfig.isValidGameElement) {
+            if (!currentConfig.isValidGameElement(element, nameEl)) {
+                element.dataset.sslProcessed = "ignored";
+                return;
+            }
+        }
+
+        if (element.dataset.sslProcessed) return;
+        element.dataset.sslProcessed = "pending";
+
+        const gameName = nameEl.textContent.trim();
+        if (!gameName) return;
+
+        stats.total++;
+        updateStatsUI();
+
+        try {
+            const result = await searchSteamGame(gameName);
+
+            if (result) {
+                const userData = await userDataPromise;
+                const owned = userData.ownedApps.includes(result.id);
+                // Simple wishlist check for ID presence
+                const wishlisted = userData.wishlist.some(w => (w.appid === result.id || w === result.id));
+                const ignored = userData.ignored && userData.ignored[result.id];
+                const proton = await fetchProtonDB(result.id);
+
+                const appData = { ...result, owned, wishlisted, ignored, proton };
+
+                if (owned) {
+                    stats.owned++;
+                    element.classList.add('ssl-container-owned');
+                } else if (wishlisted) {
+                    stats.wishlist++;
+                    element.classList.add('ssl-container-wishlist');
+                } else if (ignored) {
+                    stats.ignored++;
+                    element.classList.add('ssl-container-ignored');
+                } else {
+                    stats.missing++;
+                }
+                updateStatsUI();
+
+                const link = createSteamLink(appData);
+                nameEl.after(link);
+                element.dataset.sslProcessed = "true";
+            } else {
+                element.dataset.sslProcessed = "notfound";
+            }
+        } catch (e) {
+            console.error(e);
+            element.dataset.sslProcessed = "error";
+        }
+    }
+
+    function scanPage() {
+        if (!currentConfig.selectors) return;
+        currentConfig.selectors.forEach(strat => {
+            document.querySelectorAll(strat.container).forEach(el => {
+                processGameElement(el, strat.title);
+            });
+        });
+    }
+
+    // --- Observer ---
+    const observer = new MutationObserver((mutations) => {
+        let shouldScan = false;
+        mutations.forEach(m => { if (m.addedNodes.length > 0) shouldScan = true; });
+        if (shouldScan) {
+            if (window.sslScanTimeout) clearTimeout(window.sslScanTimeout);
+            window.sslScanTimeout = setTimeout(scanPage, 500);
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    setTimeout(scanPage, 1000);
+
+})();
