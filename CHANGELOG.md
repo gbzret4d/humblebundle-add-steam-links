@@ -2,6 +2,16 @@
 
 All notable changes to the **Steam Store Linker** userscript will be documented in this file.
 
+## [1.13] - 2026-02-01
+### Fixed
+- **Humble Bundle**: Fixed carousel detection for games after the first slide (e.g., "Haste").
+  - Updated selector to target `.slick-slide` elements individually so the script doesn't just stop at the first visible game.
+
+## [1.12] - 2026-02-01
+### Fixed
+- **Core**: Fixed logic for "Ignored" games (handles falsy `0` value from Steam API).
+- **Fanatical**: Fixed infinite stats counter loop on dynamic pages.
+
 ## [1.11] - 2026-01-31
 ### Fixed
 - **Humble Bundle**: Updated carousel/modal selectors to use verified `.expanded-info-view` class. This ensures Steam links appear correctly when clicking on a game for details.
