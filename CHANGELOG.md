@@ -2,6 +2,13 @@
 
 All notable changes to the **Steam Store Linker** userscript will be documented in this file.
 
+## [1.16] - 2026-02-01
+### Fixed
+- **UI**: Resolved text clipping in Humble Bundle Grid.
+  - Reverted global `outline-offset: -3px` (which caused text like "Keys are low" to be covered).
+  - Applied `outline-offset: -3px` **only** to Carousel items where bleeding was an issue.
+  - **Result**: Grid text is readable again, and Carousel borders don't overlap. Best of both worlds.
+
 ## [1.15] - 2026-02-01
 ### Fixed
 - **UI**: Fixed color bleeding in Humble Bundle Carousel.
