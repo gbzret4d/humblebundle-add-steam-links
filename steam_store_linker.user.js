@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Steam Store Linker (Humble & Fanatical)
 // @namespace    http://tampermonkey.net/
-// @version      1.18
+// @version      1.19
 // @description  Adds Steam links and ownership status to Humble Bundle and Fanatical
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -89,8 +89,11 @@
 
                 const processGame = (game) => {
                     if (game && game.cover && game.steam) {
-                        const filename = game.cover.split('/').pop().split('?')[0]; // Extract filename
-                        fanatical_cover_map.set(filename, game.steam);
+                        // v1.19: Only map valid IDs. If ID is null (e.g. Double Packs), skip it so we fall back to text search.
+                        if (game.steam.id) {
+                            const filename = game.cover.split('/').pop().split('?')[0]; // Extract filename
+                            fanatical_cover_map.set(filename, game.steam);
+                        }
                     }
                 };
 
@@ -360,16 +363,30 @@
                 onload: (response) => {
                     try {
                         const data = JSON.parse(response.responseText);
+                        console.log('[Steam Linker] UserData Response:', data); // DEBUG
                         const userData = {
                             ownedApps: data.rgOwnedApps || [],
                             wishlist: data.rgWishlist || [],
                             ignored: data.rgIgnoredApps || {}
                         };
+
+                        // v1.19: Detect potential cookie blocking (Firefox)
+                        if (userData.ownedApps.length === 0 && userData.wishlist.length === 0) {
+                            console.warn('[Steam Linker] Wiki result is empty. Possible causes: Not logged in OR Firefox "Total Cookie Protection" active.');
+                        }
+
+                        console.log(`[Steam Linker] Parsed Data - Owned: ${userData.ownedApps.length}, Wishlist: ${userData.wishlist.length}`); // DEBUG
                         setStoredValue('steam_userdata', { data: userData, timestamp: Date.now() });
                         resolve(userData);
-                    } catch (e) { resolve({ ownedApps: [], wishlist: [], ignored: {} }); }
+                    } catch (e) {
+                        console.error('[Steam Linker] UserData Parse Error:', e); // DEBUG
+                        resolve({ ownedApps: [], wishlist: [], ignored: {} });
+                    }
                 },
-                onerror: () => resolve({ ownedApps: [], wishlist: [], ignored: {} })
+                onerror: (err) => {
+                    console.error('[Steam Linker] UserData Request Failed:', err); // DEBUG
+                    resolve({ ownedApps: [], wishlist: [], ignored: {} });
+                }
             });
         }));
     }
