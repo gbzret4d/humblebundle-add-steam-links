@@ -3,6 +3,13 @@
 All notable changes to the **Steam Store Linker** userscript will be documented in this file.
 
 
+
+## [1.18] - 2026-02-02
+### Fixed
+- **Steam Reviews**: Improved data fetching to include **Key Activations** (`&purchase_type=all`).
+  - Corrects missing review scores for games like *Winds of Arcana* that have many reviews from key activations (which were previously ignored by the default API call).
+  - Bumped `CACHE_VERSION` to '2.1' to force a data refresh.
+
 ## [1.17] - 2026-02-02
 ### Fixed
 - **Fanatical**: Resolved infinite loop when encountering "app/null" entries (e.g., in mini-bundles).

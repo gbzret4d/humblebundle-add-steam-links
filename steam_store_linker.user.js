@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Steam Store Linker (Humble & Fanatical)
 // @namespace    http://tampermonkey.net/
-// @version      1.17
+// @version      1.18
 // @description  Adds Steam links and ownership status to Humble Bundle and Fanatical
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -138,7 +138,7 @@
     const STEAM_REVIEWS_API = 'https://store.steampowered.com/appreviews/';
     const PROTONDB_API = 'https://www.protondb.com/api/v1/reports/summaries/';
     const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-    const CACHE_VERSION = '2.0'; // Increment to invalidate old caches
+    const CACHE_VERSION = '2.1'; // Increment to invalidate old caches
 
     // Styles
     const css = `
@@ -324,7 +324,7 @@
         return new Promise(resolve => {
             GM_xmlhttpRequest({
                 method: 'GET',
-                url: `${STEAM_REVIEWS_API}${appId}?json=1&num_per_page=0`, // No reviews needed, just summary
+                url: `${STEAM_REVIEWS_API}${appId}?json=1&num_per_page=0&purchase_type=all`, // Include key activations
                 onload: res => {
                     try {
                         const data = JSON.parse(res.responseText);
