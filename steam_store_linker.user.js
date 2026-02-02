@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Steam Store Linker (Humble & Fanatical)
 // @namespace    http://tampermonkey.net/
-// @version      1.19
+// @version      1.20
 // @description  Adds Steam links and ownership status to Humble Bundle and Fanatical
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -89,9 +89,10 @@
 
                 const processGame = (game) => {
                     if (game && game.cover && game.steam) {
-                        // v1.19: Only map valid IDs. If ID is null (e.g. Double Packs), skip it so we fall back to text search.
+                        // v1.19: Only map valid IDs. 
                         if (game.steam.id) {
-                            const filename = game.cover.split('/').pop().split('?')[0]; // Extract filename
+                            // v1.20: Handle full URLs and query strings more robustly
+                            let filename = game.cover.split('/').pop().split('?')[0];
                             fanatical_cover_map.set(filename, game.steam);
                         }
                     }
@@ -604,7 +605,15 @@
             if (currentConfig.interceptor) {
                 const images = element.querySelectorAll('img[src]');
                 for (const img of images) {
-                    const filename = img.src.split('/').pop().split('?')[0];
+                    let filename = img.src.split('/').pop().split('?')[0];
+                    // v1.20: Handle fanatical.imgix.net URLs which have a different structure
+                    if (img.src.includes('fanatical.imgix.net')) {
+                        const imgixMatch = img.src.match(/\/(\w+\.\w+)$/); // e.g., /cover.jpg
+                        if (imgixMatch) {
+                            filename = imgixMatch[1];
+                        }
+                    }
+
                     if (fanatical_cover_map.has(filename)) {
                         const steamData = fanatical_cover_map.get(filename);
                         result = {
