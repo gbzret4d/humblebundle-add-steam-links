@@ -17,6 +17,7 @@ A Tampermonkey Userscript that enhances **Humble Bundle** and **Fanatical** stor
     - **Steam User Rating**: Displays the percentage of positive user reviews from Steam (Blue >70%, Mixed, Red <40%).
     - **Fanatical API Interceptor**: Captures internal API data on Fanatical for 100% accuracy (no name guessing).
     - **Humble Bundle Carousel**: Supports the game detail modals/popups.
+    - **Smart Exclusion**: Detects non-game pages (like "Book Bundles" or "Software Bundles" on Fanatical) and automatically disables itself to avoid errors.
 - **Stats Panel**: A floating panel shows a summary of the current page (Total, Owned, Missing, etc.).
 - **Smart Tooltips**: Hover over the Steam icon to see the game's **Cover Art** and full title.
 

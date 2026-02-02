@@ -4,6 +4,17 @@ All notable changes to the **Steam Store Linker** userscript will be documented 
 
 
 
+## [1.24] - 2026-02-02
+### Fixed
+- **Fanatical**: Fixed false positives in Book/Software bundle exclusion.
+  - The script now uses **strict equality** checking for breadcrumbs to avoid ignoring legitimate game bundles (e.g. "Hyper VR Bundle") whose parent category text ("PC Game Bundles, Book Bundles...") contained the blocklisted keywords.
+
+## [1.23] - 2026-02-02
+### Added
+- **Fanatical**: Added **Book & Software Bundle Filter**.
+  - The script now intelligently detects "Book Bundles" and "Software Bundles" (via breadcrumbs) and **stops execution** on those pages.
+  - *Benefit*: Prevents false positives and meaningless Steam searches for eBooks or software that doesn't exist on Steam.
+
 ## [1.18] - 2026-02-02
 ### Fixed
 - **Steam Reviews**: Improved data fetching to include **Key Activations** (`&purchase_type=all`).
