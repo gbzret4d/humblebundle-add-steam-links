@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Steam Store Linker (Humble & Fanatical)
 // @namespace    http://tampermonkey.net/
-// @version      1.26
+// @version      1.27
 // @description  Adds Steam links and ownership status to Humble Bundle and Fanatical
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -577,6 +577,9 @@
     let userDataPromise = fetchSteamUserData();
 
     async function processGameElement(element, nameSelector) {
+        // v1.27: Visibility Check - Fixes double-counting on Bundle pages (hidden tiers/mobile views)
+        if (element.offsetParent === null) return;
+
         // v1.6: Persistence Check - If marked 'true' but link is gone (wiped by another script), reset and retry.
         if (element.dataset.sslProcessed === "true") {
             if (!element.querySelector('.ssl-link')) {
