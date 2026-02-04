@@ -244,6 +244,12 @@
             z-index: 10;
         }
 
+        /* v1.37: Aggressive Table Fixing for DailyIndieGame */
+        body[bgcolor] table { /* Basic selector for DIG's main table structures */
+           border-collapse: separate !important; 
+           border-spacing: 0 5px !important;
+        }
+
         /* v1.36: Hide the redundant "STEAM page link" column specifically in the game rows */
         tr[onmouseover] td:last-child, 
         tr[onmouseover] td:nth-last-child(2) { /* Sometimes there are hidden cols? hiding last visual one */
@@ -254,6 +260,7 @@
         .ssl-link-inline { 
             margin-left: 10px; 
             vertical-align: middle; 
+            display: inline-block !important; /* Force visibility */
         }
         .ssl-container-owned:hover {
             box-shadow: inset 0 0 30px rgba(164, 208, 7, 0.6) !important;
