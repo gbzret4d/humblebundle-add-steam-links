@@ -69,7 +69,7 @@ You can also manually update by clicking the installation link again or checking
 
 ## Disclaimer
 
-This script is not affiliated with Humble Bundle, Fanatical, Valve, or ProtonDB. Use at your own risk.
+This script is not affiliated with Humble Bundle, Fanatical, DailyIndieGame, GOG, Valve, or ProtonDB. Use at your own risk.
 
 ## To-Do
 
