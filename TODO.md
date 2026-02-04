@@ -23,3 +23,29 @@
 - [ ] **Price History**: Show "Historical Low" price (via IsThereAnyDeal or similar).
 - [ ] **Steam Deck Details**: Show specific ProtonDB attributes on hover (e.g. "Small Text", "External Launcher").
 - [ ] **Local Override**: Allow users to manually "fix" a wrong Steam link via a context menu.
+
+## 🔌 Integrations (External Data)
+- [ ] **HowLongToBeat**: Show average playtime (Main Story / Completionist) on the cover.
+- [ ] **Metacritic / OpenCritic**: Show external review scores next to Steam rating.
+- [ ] **IsThereAnyDeal (ITAD)**: Show historical low price and warn if cheaper elsewhere.
+- [ ] **Barter.vg**: Integration for traders (show trade frequency/junk status).
+- [ ] **GeForce Now**: Icon for Cloud Streaming support.
+
+## ⚠️ Warnungen & Filter
+- [ ] **DRM-Check**: Warn if game has Denuvo or Always-Online (via PCGamingWiki/Steam-Tags).
+- [ ] **Genre-Highlighting**: User-defined highlight (Green) or dim (Red) based on genres (e.g. "Visual Novel", "Sports").
+- [ ] **Hardware-Check**: Warn if VR required or high system requirements.
+- [ ] **Asset-Flip Filter**: Warn for known "Fake Games" or bad developer reputation.
+
+## 🛠️ User Experience & Tools
+- [ ] **"Copy Key" Function**: Button next to unused keys on bundle pages to copy with one click.
+- [ ] **Notes Function**: Private text field per game ("Watch later", "Save for friend").
+- [ ] **Custom Tags**: User-defined tags ("Played on Console", "Junk").
+- [ ] **Multi-User Check**: Check if a friend owns the game (by entering SteamID).
+
+## 📊 Data & Export
+- [ ] **Export Function**: Button "Export Page to CSV/JSON" to list all games on the current page.
+- [ ] **Sum Calculator**: Calculate real value of a bundle (Steam Price Sum vs Bundle Price).
+
+## 🐧 Linux / Steam Deck Advanced
+- [ ] **Launcher Warning**: Warn about external launchers (EA App, Ubisoft Connect) on the Deck.
