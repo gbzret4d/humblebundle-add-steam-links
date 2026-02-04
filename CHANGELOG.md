@@ -4,6 +4,14 @@ All notable changes to the **Game Store Enhancer** userscript will be documented
 
 
 
+## [1.34] - 2026-02-04
+### Fixed
+- **DailyIndieGame**: 
+  - **Layout Fix**: Removed broad `table` selector which caused a massive green border around the entire game list. Now targets individual rows (`tr`).
+  - **Duplicates**: Added a safeguard to prevent multiple Steam badges from appearing on the same game.
+  - **Styling**: Added spacing (`margin-right`) to badges.
+  - **Cleanup**: Hides the site's native "View on Steam" text links.
+
 ## [1.33] - 2026-02-04
 ### Fixed
 - **UI**: Changed from `outline` to `border` for Owned/Wishlist/Ignored indicators.

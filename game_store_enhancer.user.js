@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (formerly Steam Store Linker)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      1.33
+// @version      1.34
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, and GOG with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -86,12 +86,10 @@
         'dailyindiegame.com': {
             name: 'DailyIndieGame',
             selectors: [
-                // Main Marketplace & Bundles (Text link with AppID)
-                { container: 'td', title: 'a[href^="site_gamelisting_"]' },
+                // Main Marketplace & Bundles (Table Rows). Targeting the ROW (`tr`) allows us to highlight the whole line.
+                { container: 'tr[onmouseover]', title: 'a[href^="site_gamelisting_"]' },
                 // Product Page
-                { container: '#content', title: 'font[size="5"]' },
-                // Bundle Page (List view)
-                { container: 'table', title: 'a[href^="site_gamelisting_"]' }
+                { container: '#content', title: 'font[size="5"]' }
             ],
             // Custom logic to grab ID from URL directly
             getAppId: (element) => {
@@ -203,6 +201,7 @@
         .ssl-link {
             display: inline-block;
             margin-top: 5px;
+            margin-right: 10px; /* v1.34: Spacing for DIG */
             font-size: 11px;
             text-decoration: none;
             color: #c7d5e0;
@@ -214,6 +213,12 @@
             box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             z-index: 999;
             position: relative;
+        }
+        
+        /* v1.34: Hide native Steam links on DailyIndieGame to avoid clutter */
+        a[href*="dailyindiegame.com"] a[href*="store.steampowered.com"], /* Sub-links inside container? */
+        tr[onmouseover] a[href*="store.steampowered.com"] {
+             display: none !important; 
         }
         .ssl-link:hover { color: #fff; background: #2a475e; }
         .ssl-link span { margin-right: 4px; padding-right: 4px; border-right: 1px solid #3c3d3e; }
@@ -638,6 +643,14 @@
         if (element.dataset.sslProcessed) return;
 
         const nameEl = element.querySelector(nameSelector);
+
+        // v1.34: Deduplication Check - If an ssl-link already exists inside this element, DO NOT add another one.
+        // This acts as a safety against messy HTML or aggressive re-scanning logic on sites like DIG.
+        if (element.querySelector('.ssl-link')) {
+            element.dataset.sslProcessed = "true"; // Ensure it's marked as done
+            return;
+        }
+
         // v1.30: DailyIndieGame sometimes needs to process the element itself if it IS the link
         if (!nameEl && currentConfig.name === 'DailyIndieGame' && element.tagName === 'A') {
             // Logic to handle direct link processing if needed, but our selectors use containers.
