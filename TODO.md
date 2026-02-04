@@ -31,7 +31,7 @@
 - [ ] **Barter.vg**: Integration for traders (show trade frequency/junk status).
 - [ ] **GeForce Now**: Icon for Cloud Streaming support.
 
-## ⚠️ Warnungen & Filter
+## ⚠️ Warnings & Filters
 - [ ] **DRM-Check**: Warn if game has Denuvo or Always-Online (via PCGamingWiki/Steam-Tags).
 - [ ] **Genre-Highlighting**: User-defined highlight (Green) or dim (Red) based on genres (e.g. "Visual Novel", "Sports").
 - [ ] **Hardware-Check**: Warn if VR required or high system requirements.
