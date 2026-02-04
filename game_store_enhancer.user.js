@@ -843,32 +843,30 @@
                 }
 
                 if (currentConfig.name === 'DailyIndieGame') {
-                    // v1.38-DEV: JS-based Layout Enforcement (CSS failed)
+                    // v1.39-DEV: Cell-Level Styling & In-Link Badge (The "Nuclear Option")
 
-                    // 1. Force Badge Visibility
+                    // 1. Force Badge Visibility by putting it INSIDE the name link (Prefix)
                     link.classList.add('ssl-link-inline');
                     link.style.display = 'inline-block';
-                    link.style.marginLeft = '10px';
+                    link.style.marginRight = '8px';
+                    link.style.fontSize = '10px';
 
-                    // 2. Hide Last Column (Steam Link)
-                    const cells = element.cells;
-                    if (cells && cells.length > 0) {
-                        // Usually the last cell has the Steam link
-                        const lastCell = cells[cells.length - 1];
-                        if (lastCell) lastCell.style.display = 'none';
-                    }
+                    // Ensure nameel is visible and amenable to insertion
+                    nameEl.style.display = 'inline-block';
+                    nameEl.insertBefore(link, nameEl.firstChild);
 
-                    // 3. Fake Gap using Border on the TR
-                    // Note: TR borders require border-collapse: separate on the table, which we enforce in CSS
-                    if (element.style) {
-                        element.style.borderBottom = "5px solid #1a1c1d";
-                    }
+                    // 2. Hide Last Column (Steam Link) safely
+                    const lastCell = element.lastElementChild;
+                    if (lastCell) lastCell.style.display = 'none';
 
-                    // Append Safe
-                    if (nameEl.parentNode) {
-                        nameEl.parentNode.appendChild(link);
-                    } else {
-                        nameEl.after(link);
+                    // 3. Fake Gap using Borders on CELLS (TR borders often fail in quirks mode)
+                    const allCells = element.children;
+                    for (let i = 0; i < allCells.length; i++) {
+                        let cell = allCells[i];
+                        cell.style.borderBottom = "10px solid #1a1c1d !important";
+                        cell.style.setProperty("border-bottom", "10px solid #1a1c1d", "important");
+                        // Optional: Add padding to separate text from border
+                        cell.style.paddingBottom = "4px";
                     }
                 } else {
                     nameEl.after(link);
