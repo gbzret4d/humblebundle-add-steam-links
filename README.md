@@ -1,5 +1,11 @@
 # Game Store Enhancer (formerly Steam Store Linker)
 
+> [!CAUTION]
+> **DEVELOP / BETA VERSIONS**
+> The `develop` branch contains experimental code (e.g. `1.37-DEV`).
+> **DO NOT USE** unless you are helping with testing. These versions **will break things**, contain debug logs, and might be unstable.
+> Stick to the `main` branch for the stable experience.
+
 A Tampermonkey Userscript that enhances **Humble Bundle**, **Fanatical**, **DailyIndieGame**, and **GOG.com** with Steam data.
 It displays your **Ownership Status**, **Wishlist**, **Steam User Reviews**, **Deck Compatibility**, and links directly to the Steam store.
 
