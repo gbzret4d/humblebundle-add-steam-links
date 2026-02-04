@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         Steam Store Linker (Humble & Fanatical)
 // @namespace    http://tampermonkey.net/
-// @version      1.30
+// @version      1.31
 // @description  Adds Steam links and ownership status to Humble Bundle and Fanatical
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
 // @match        https://www.fanatical.com/*
 // @match        https://www.dailyindiegame.com/*
 // @match        https://dailyindiegame.com/*
+// @match        https://www.gog.com/*
 // @icon         https://store.steampowered.com/favicon.ico
 // @updateURL    https://raw.githubusercontent.com/gbzret4d/steam-store-linker/main/steam_store_linker.user.js
 // @downloadURL  https://raw.githubusercontent.com/gbzret4d/steam-store-linker/main/steam_store_linker.user.js
@@ -107,6 +108,21 @@
                 }
                 return null;
             }
+        },
+        'gog.com': {
+            name: 'GOG',
+            selectors: [
+                // Store Grid
+                { container: '.product-tile', title: '.product-title span' },
+                // Product Page
+                { container: '.productcard-basics', title: 'h1.productcard-basics__title' },
+                // Wishlist & Library (List View)
+                { container: '.product-row', title: '.product-row__title' },
+                // Order History
+                { container: '.product-row', title: '.product-title__text' }
+            ],
+            // GOG IDs don't match Steam, so we rely on Name Search.
+            // But we can filter out non-game pages if needed.
         }
 
     };
@@ -650,6 +666,12 @@
 
         // v1.28: Deduplication Helper
         const getUniqueId = (el, name) => {
+            // v1.31: GOG Deduplication using stable IDs
+            if (currentConfig.name === 'GOG') {
+                const gogId = el.getAttribute('data-product-id') || el.getAttribute('gog-product');
+                if (gogId) return 'gog_' + gogId;
+            }
+
             const link = el.querySelector('a[href]');
             if (link && link.href) {
                 // Remove query parameters to normalize URLs

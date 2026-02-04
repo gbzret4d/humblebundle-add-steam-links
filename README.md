@@ -4,7 +4,7 @@ A Tampermonkey Userscript that enhances **Humble Bundle** and **Fanatical** stor
 
 ## Features
 
-- **Multi-Site Support**: Works on Humble Bundle, Fanatical, and DailyIndieGame.
+- **Multi-Site Support**: Works on Humble Bundle, Fanatical, DailyIndieGame, and GOG.com.
 - **Steam Integration**: Adds a direct link to the Steam store page for games found in bundles.
 - **Visual Status Icons**:
     - **Owned**: Games you own are marked with a green checkmark check and grayed out.
@@ -37,6 +37,8 @@ You can also manually update by clicking the installation link again or checking
 2.  **Visit**: Go to any supported store page:
     - [Humble Bundle](https://www.humblebundle.com/)
     - [Fanatical](https://www.fanatical.com/)
+    - [DailyIndieGame](https://dailyindiegame.com/)
+    - [GOG](https://www.gog.com/)
 3.  **Permissions**: The script will ask for permission to access:
     - `store.steampowered.com` (for ownership/search)
     - `www.protondb.com` (for Steam Deck status)

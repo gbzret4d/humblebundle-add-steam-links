@@ -4,6 +4,13 @@ All notable changes to the **Steam Store Linker** userscript will be documented 
 
 
 
+## [1.31] - 2026-02-04
+### Added
+- **GOG**: Added support for **GOG.com**.
+  - Works on **Store**, **Product Pages**, **Wishlist**, **Library**, and **Order History**.
+  - **Deduplication**: Uses internal GOG Product IDs to prevent re-scanning the same game multiple times on a page.
+  - **Language Agnostic**: Selectors work on both English (`/en/`) and German (`/de/`) versions.
+
 ## [1.30] - 2026-02-04
 ### Added
 - **DailyIndieGame**: Added full support for **DailyIndieGame.com**.
