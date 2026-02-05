@@ -5,6 +5,11 @@ All notable changes to the **Game Store Enhancer** userscript will be documented
 
 
 
+## [1.45] - 2026-02-05
+### Fixed
+- **Core / Search**: Added debug logging for name cleaning.
+- **IndieGala**: Verified product page selectors for games like "Warhammer 40,000: Rogue Trader".
+
 ## [1.44] - 2026-02-05
 ### Fixed
 - **IndieGala**: Added support for **Publisher Sale / Submenu Cards** (e.g. "Telltale Sale").

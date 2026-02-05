@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      1.44
+// @version      1.45
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -559,6 +559,7 @@
 
         const cleanupRegex = /(:| -| –| —)?\s*(The\s+)?(Pre-Purchase|Pre-Order|Steam Key|Complete|Anthology|Collection|Definitive|Game of the Year|GOTY|Deluxe|Ultimate|Premium)(\s+(Edition|Cut|Content|Pack))?(\s+Bundle)?(\s*\.{3,})?/gi;
         const cleanedName = gameName.replace(cleanupRegex, '').trim().toLowerCase();
+        console.log(`[Game Store Enhancer] Cleaning name: "${gameName}" -> "${cleanedName}"`);
 
         return steamQueue.add(() => new Promise((resolve) => {
             GM_xmlhttpRequest({
