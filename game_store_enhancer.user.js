@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      1.41
+// @version      1.42
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -131,6 +131,8 @@
                 { container: '.store-main-page-items-list-item-col', title: '.store-main-page-items-list-item-details a' },
                 // v1.41: Homepage "Results" Grid (e.g. Metro Awakening)
                 { container: '.main-list-results-item-margin', title: 'h3 a' },
+                // v1.42: Product Detail Page (e.g. Resident Evil Requiem)
+                { container: '.store-product-header-flex', title: 'h1[itemprop="name"]' },
                 // Bundle Tiers (Summary Grid)
                 { container: '.bundle-page-tier-item-col', title: '.bundle-page-tier-item-title' },
                 // Homepage / Top Sellers (Generic Fallback)
@@ -555,7 +557,7 @@
         const cached = getStoredValue(cacheKey, null);
         if (cached && (Date.now() - cached.timestamp < CACHE_TTL * 7)) return cached.data;
 
-        const cleanupRegex = /(:| -| –| —)?\s*(The\s+)?(Complete|Anthology|Collection|Definitive|Game of the Year|GOTY|Deluxe|Ultimate|Premium)(\s+(Edition|Cut|Content|Pack))?(\s+Bundle)?(\s*\.{3,})?/gi;
+        const cleanupRegex = /(:| -| –| —)?\s*(The\s+)?(Pre-Purchase|Pre-Order|Steam Key|Complete|Anthology|Collection|Definitive|Game of the Year|GOTY|Deluxe|Ultimate|Premium)(\s+(Edition|Cut|Content|Pack))?(\s+Bundle)?(\s*\.{3,})?/gi;
         const cleanedName = gameName.replace(cleanupRegex, '').trim().toLowerCase();
 
         return steamQueue.add(() => new Promise((resolve) => {

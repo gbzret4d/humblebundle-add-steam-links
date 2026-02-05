@@ -5,6 +5,13 @@ All notable changes to the **Game Store Enhancer** userscript will be documented
 
 
 
+## [1.42] - 2026-02-05
+### Fixed
+- **IndieGala**: Added support for **Product Detail Pages** (e.g. Resident Evil Requiem).
+- **Core / Search**: Improved Name Cleaning.
+  - Now filters out "Pre-Purchase", "Pre-Order", and "Steam Key" from game titles before searching Steam.
+  - *Fixes*: Matches for keys sold as "PRE-PURCHASE [Game Name] Steam Key".
+
 ## [1.41] - 2026-02-05
 ### Fixed
 - **IndieGala**: Added support for **Homepage / Search Results** grid items (e.g. "Metro Awakening", "Fallout 4").
