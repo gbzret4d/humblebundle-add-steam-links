@@ -5,6 +5,13 @@ All notable changes to the **Game Store Enhancer** userscript will be documented
 
 
 
+## [1.49] - 2026-02-06
+### Added
+- **IndieGala**: Implemented **Hover Reveal** for store grid items.
+  - Hovering over the "ADD TO CART" button now creates a sleek overlay showing the **Steam Link** and **Review Score** (e.g. "STEAM | <span style="color:#66C0F4">95%</span>").
+  - Solves layout issues with long game titles and keeps the UI clean.
+- **UI**: Added `ssl-steam-overlay` styles with smooth transitions.
+
 ## [1.48] - 2026-02-06
 ### Fixed
 - **IndieGala**: improved **Grid Layout** placement.

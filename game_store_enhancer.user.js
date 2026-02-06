@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      1.48
+// @version      1.49
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -380,6 +380,44 @@
         #ssl-stats h4 { margin: 0 0 5px 0; color: #66c0f4; font-size: 13px; text-transform: uppercase; border-bottom: 1px solid #2a475e; padding-bottom: 2px; }
         #ssl-stats div { display: flex; justify-content: space-between; margin-bottom: 2px; }
         #ssl-stats span.val { font-weight: bold; color: #fff; margin-left: 10px; }
+        
+        /* v1.49: IndieGala Hover Reveal Styles */
+        .store-main-page-items-list-item-bottom {
+             position: relative !important; /* Ensure absolute child aligns to this */
+        }
+        .ssl-steam-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #171a21 0%, #1b2838 100%);
+            color: #c7d5e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            z-index: 999;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .store-main-page-items-list-item-bottom:hover .ssl-steam-overlay {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .ssl-steam-overlay:hover {
+            background: linear-gradient(90deg, #2a475e 0%, #2a475e 100%);
+            color: #ffffff;
+            text-decoration: none;
+        }
+        
+        .ssl-steam-overlay img { margin-right: 6px; }
     `;
     GM_addStyle(css);
 
@@ -974,28 +1012,31 @@
                         cell.style.paddingBottom = "4px";
                     }
                 } else if (currentConfig.name === 'IndieGala' && element.classList.contains('store-main-page-items-list-item-col')) {
-                    // v1.48: IndieGala Store Grid - Link Placement Check
-                    // If title is too long, the link disappears. Try to move it to the bottom "ADD TO CART" row.
-                    // The structure usually is: .store-main-page-items-list-item-col -> ... -> .store-main-page-items-list-item-bottom
+                    // v1.49: IndieGala Store Grid - Hover Reveal Strategy
+                    // Instead of jamming the link into the layout, we modify the stick-to-bottom bar
+                    // to reveal the Steam info on hover.
                     const bottomRow = element.querySelector('.store-main-page-items-list-item-bottom');
                     if (bottomRow) {
-                        if (DEBUG) console.log('[Game Store Enhancer] [DEBUG] Found bottom row for IndieGala item:', gameName);
+                        // 1. Create the overlay element
+                        const overlay = document.createElement('a');
+                        overlay.className = 'ssl-steam-overlay';
+                        overlay.href = link.href;
+                        overlay.target = '_blank';
 
-                        // Style the link to fit in the bottom row
-                        link.style.marginTop = '0';
-                        link.style.marginRight = '5px';
-                        link.style.display = 'inline-flex';
-                        link.style.alignItems = 'center';
-
-                        // Try to insert before the "ADD TO CART" button event if it's a form or div
-                        const cartBtn = bottomRow.querySelector('.add-to-cart-btn') || bottomRow.firstChild;
-                        if (cartBtn) {
-                            bottomRow.insertBefore(link, cartBtn);
-                        } else {
-                            bottomRow.appendChild(link);
+                        // 2. Build Content: Icon + Text + Review Score
+                        let reviewSnippet = '';
+                        if (appData && appData.reviews && appData.reviews.percent) {
+                            let color = '#a8926a'; // Mixed
+                            if (parseInt(appData.reviews.percent) >= 70) color = '#66C0F4'; // Blue
+                            if (parseInt(appData.reviews.percent) < 40) color = '#c15755'; // Red
+                            reviewSnippet = ` <span style="color:${color}; margin-left:5px;">${appData.reviews.percent}%</span>`;
                         }
+
+                        overlay.innerHTML = `<img src="https://store.steampowered.com/favicon.ico" class="ssl-icon-img" style="width:16px;height:16px;vertical-align:text-top;"> STEAM${reviewSnippet}`;
+
+                        // 3. Append to the bottom container
+                        bottomRow.appendChild(overlay);
                     } else {
-                        // Fallback to default behavior (after name)
                         nameEl.after(link);
                     }
                 } else {
