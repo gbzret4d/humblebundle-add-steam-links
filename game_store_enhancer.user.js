@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      1.53
+// @version      1.54
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -1019,12 +1019,23 @@
                     const figure = element.querySelector('figure');
 
                     if (figure) {
+                        // v1.54: Force relative positioning on the figure to ensure the overlay stays inside
+                        figure.style.position = 'relative';
+                        figure.style.display = 'block'; // Ensure it's block-level
+
                         // 1. Create the overlay element
                         // Use DIV instead of A to avoid illegal nested links (since figure is often inside an A)
                         const overlay = document.createElement('div');
                         overlay.className = 'ssl-steam-overlay';
                         overlay.title = "Open Steam Store";
                         overlay.style.cursor = "pointer";
+
+                        // Force styles directly to override any page weirdness
+                        overlay.style.position = 'absolute';
+                        overlay.style.bottom = '0';
+                        overlay.style.left = '0';
+                        overlay.style.width = '100%';
+                        overlay.style.zIndex = '20'; // Higher than before to beat other overlays
 
                         overlay.addEventListener('click', (e) => {
                             e.preventDefault();

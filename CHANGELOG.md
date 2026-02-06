@@ -16,6 +16,13 @@ All notable changes to the **Game Store Enhancer** userscript will be documented
   - Changed overlay element from `<a>` to `<div>` to verify compatibility with games that are already wrapped in a link.
   - *Fixes*: Broken layout/image disappearance on Bundle and Store pages where `<a>` nesting is illegal.
 
+## [1.54] - 2026-02-06
+### Fixed
+- **IndieGala**: Fixed **Image Overlay** positioning on Bundle pages.
+  - Forced `position: relative` on the game card image container (`figure`) to ensure the overlay stays inside.
+  - Switched overlay positioning to strict `bottom: 0` / `left: 0`.
+  - Increased `z-index` to 20 to appear above local overlays.
+
 
 ## [1.51] - 2026-02-06
 ### Added
