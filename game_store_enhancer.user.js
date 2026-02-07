@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      2.0.7
+// @version      2.0.8
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -1171,7 +1171,7 @@
                         figure.appendChild(overlay);
 
                     } else {
-                    } else {
+
                         // Fallback: If neither Strategy fits (or forced Simple)
                         // v2.0.6: Product Page Badge Strategy (Next to "Steam Key" label)
                         if (forceSimple) {
