@@ -12,9 +12,16 @@ if (!fs.existsSync(DATA_DIR)) {
 
 console.log('[Steam Cache] Fetching App List from Steam...');
 
+const apiKey = process.env.STEAM_API_KEY;
+const apiPath = apiKey
+    ? `/ISteamApps/GetAppList/v0002/?key=${apiKey}&format=json`
+    : '/ISteamApps/GetAppList/v0002/?format=json';
+
+if (apiKey) console.log('[Steam Cache] Using provided Steam API Key.');
+
 const options = {
     hostname: 'api.steampowered.com',
-    path: '/ISteamApps/GetAppList/v0002/?format=json',
+    path: apiPath,
     method: 'GET',
     headers: {
         'User-Agent': 'Node.js/SteamCacheUpdater'
