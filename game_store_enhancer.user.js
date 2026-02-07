@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      2.0.4
+// @version      2.0.5
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -18,6 +18,8 @@
 // @connect      store.steampowered.com
 // @connect      www.protondb.com
 // @connect      protondb.max-p.me
+// @connect      steamcommunity.com
+// @connect      gbzret4d.github.io
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -837,12 +839,15 @@
 
         if (element.dataset.sslProcessed) return;
 
-        // v1.61: Performance Optimization - Skip if already processed
-        // We check a data attribute on the container itself
-        if (element.dataset.sslProcessed) return;
+        // v2.0.5: Fix ReferenceErrors
+        const forceSimple = currentConfig.forceSimple || false;
+        const selectorToUse = nameSelector || currentConfig.title; // Fallback to config if not passed
 
-        let nameEl = element.querySelector(titleSelector);
-        if (!nameEl) return;
+        let nameEl = element.querySelector(selectorToUse);
+        if (!nameEl) {
+            // Try strict fallback if selector failed (e.g. might differ in specific sections)
+            return;
+        }
 
         // v1.58: Fix Overlay Positioning - Ensure we have a valid container for relative positioning
         // Strategy:
