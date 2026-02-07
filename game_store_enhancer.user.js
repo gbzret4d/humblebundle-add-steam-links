@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      2.0.12
+// @version      2.0.13
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -1319,29 +1319,28 @@
                     url: bundleUrl,
                     onload: (res) => {
                         try {
-                            const parser = new DOMParser();
-                            const doc = parser.parseFromString(res.responseText, "text/html");
-                            // Extract IDs from Bundle Page
-                            // Pattern 1: Bundle Images
-                            const images = Array.from(doc.querySelectorAll('img[src*="/bundle_games/"]'));
-                            const idsFromImages = images.map(img => {
-                                const m = img.src.match(/\/(\\d+)\\.jpg/);
-                                return m ? m[1] : null;
-                            }).filter(Boolean);
+                            // v2.0.12: Improved extraction (RegEx on raw text is more robust than DOMParser for scraping)
+                            const html = res.responseText;
+                            const allIds = new Set();
 
-                            // Pattern 2: Steam Links
-                            const links = Array.from(doc.querySelectorAll('a[href*="store.steampowered.com/app/"]'));
-                            const idsFromLinks = links.map(l => {
-                                const m = l.href.match(/\/app\/(\\d+)/);
-                                return m ? m[1] : null;
-                            }).filter(Boolean);
+                            // Pattern 1: IndieGala Bundle Images (e.g. /bundle_games/yyyymmdd/12345.jpg)
+                            // Source can be src or data-src
+                            const imageMatches = html.matchAll(/\/bundle_games\/\d+\/(\d+)\.jpg/g);
+                            for (const m of imageMatches) allIds.add(m[1]);
 
-                            const allIds = [...new Set([...idsFromImages, ...idsFromLinks])];
+                            // Pattern 2: Steam Store Links (e.g. /app/12345)
+                            const linkMatches = html.matchAll(/store\.steampowered\.com\/app\/(\d+)/g);
+                            for (const m of linkMatches) allIds.add(m[1]);
+
+                            // Pattern 3: Steam Capsule/Header Images (often used in carousels)
+                            // e.g. apps/12345/header.jpg
+                            const capMatches = html.matchAll(/steam\/apps\/(\d+)\//g);
+                            for (const m of capMatches) allIds.add(m[1]);
 
                             // Check Wishlist
                             fetchSteamUserData().then(userData => {
                                 const wishlist = userData?.wishlist || [];
-                                const hasWishlist = allIds.some(id => wishlist.includes(parseInt(id)) || wishlist.includes(String(id)));
+                                const hasWishlist = Array.from(allIds).some(id => wishlist.includes(parseInt(id)) || wishlist.includes(String(id)));
 
                                 if (hasWishlist) injectWishlistDot(card);
 
