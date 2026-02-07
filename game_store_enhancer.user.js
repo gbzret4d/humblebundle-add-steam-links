@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      2.0.16
+// @version      2.0.17
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -1290,20 +1290,28 @@
         // v2.0.14: Add specific styles for IndieGala bundle pages
         // This is added here because it's specific to IndieGala and needs to be applied once.
         GM_addStyle(`
-        /* v2.0.16: Spacing fix for IndieGala Bundle Page - Apply styling ONLY to the cover image */
-        .ssl-container-ignored .bundle-page-tier-item-col {
+        /* v2.0.17: Spacing fix for IndieGala Bundle Page - Apply styling ONLY to the cover image */
+        .ssl-container-ignored {
             border: none !important;
             padding: 0 5px !important; /* Reset/Ensure default padding */
+            background: none !important;
+            box-shadow: none !important;
         }
         .ssl-container-ignored .bundle-page-tier-item-outer {
             border: none !important;
             margin: 0 !important;
             box-shadow: none !important;
         }
-        .ssl-container-ignored .bundle-page-tier-item-cover {
+        /* Target the figure/image inside the ignored container */
+        .ssl-container-ignored .bundle-page-tier-item-image, 
+        .ssl-container-ignored figure,
+        .ssl-container-ignored img.img-fit {
             border: 4px solid #d9534f !important;
             border-radius: 6px;
             opacity: 0.6; /* Dim the ignored game image */
+        }
+        .ssl-title-ignored {
+             color: #d9534f !important;
         }
         
         /* v2.0.16: Bundle Wishlist Indicator - Inset Shadow to prevent clipping */
