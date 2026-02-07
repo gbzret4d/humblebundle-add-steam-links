@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      2.0.10
+// @version      2.0.11
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -319,6 +319,15 @@
         .ssl-owned { color: #a4d007; font-weight: bold; }
         .ssl-wishlist { color: #66c0f4; font-weight: bold; }
         .ssl-ignored { color: #d9534f; }
+        
+        .ssl-title-ignored {
+            border: 2px solid #d9534f !important;
+            border-radius: 4px;
+            padding: 2px 6px !important;
+            background-color: rgba(217, 83, 79, 0.2);
+            box-shadow: 0 0 5px rgba(217, 83, 79, 0.4);
+            display: inline-block; /* Ensure box model works */
+        }
 
         .ssl-review-positive { color: #66C0F4; font-weight: bold; } /* Blue for positive */
         .ssl-review-mixed { color: #a8926a; font-weight: bold; } /* Brown for mixed */
@@ -1049,6 +1058,7 @@
                 } else if (ignored !== undefined) {
                     if (isNewStats && !stats.countedSet.has(uniqueId)) stats.ignored++;
                     element.classList.add('ssl-container-ignored');
+                    if (nameEl) nameEl.classList.add('ssl-title-ignored');
                 } else {
                     if (isNewStats && !stats.countedSet.has(uniqueId)) stats.missing++;
                 }
