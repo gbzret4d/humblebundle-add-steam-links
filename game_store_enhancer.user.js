@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      2.0.9
+// @version      2.0.10
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -144,7 +144,7 @@
                 // v1.42: Product Detail Page (e.g. Resident Evil Requiem)
                 // v2.0.4: Moved to Cover Art container for better overlay positioning
                 //{ container: '.store-product-header-flex', title: 'h1[itemprop="name"]', forceSimple: true },
-                { container: '.store-product-contents-aside-inner figure', title: 'h1[itemprop="name"]' },
+                { container: '.store-product-contents-aside-inner figure', title: 'h1[itemprop="name"]', externalTitle: true },
 
                 // v1.47: Fallback Product Page
                 //{ container: '.store-product-page-content', title: 'h1', forceSimple: true }, // Legacy
@@ -825,7 +825,7 @@
 
     let userDataPromise = fetchSteamUserData();
 
-    async function processGameElement(element, nameSelector, forceSimpleArg) {
+    async function processGameElement(element, nameSelector, forceSimpleArg, externalTitleArg) {
         // v1.27: Visibility Check - Fixes double-counting on Bundle pages (hidden tiers/mobile views)
         if (element.offsetParent === null) return;
 
@@ -846,7 +846,13 @@
         const forceSimple = forceSimpleArg || false;
         const selectorToUse = nameSelector || currentConfig.title; // Fallback to config if not passed
 
-        let nameEl = element.querySelector(selectorToUse);
+        let nameEl;
+        if (externalTitleArg) {
+            nameEl = document.querySelector(selectorToUse);
+        } else {
+            nameEl = element.querySelector(selectorToUse);
+        }
+
         if (!nameEl) {
             // Try strict fallback if selector failed (e.g. might differ in specific sections)
             return;
@@ -1247,7 +1253,7 @@
                 console.log(`[Game Store Enhancer] [DEBUG] Selector "${strat.container}" found ${elements.length} elements.`);
             }
             elements.forEach(el => {
-                processGameElement(el, strat.title, strat.forceSimple);
+                processGameElement(el, strat.title, strat.forceSimple, strat.externalTitle);
             });
         });
     }

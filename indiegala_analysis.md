@@ -1,5 +1,5 @@
 # IndieGala Site Analysis & Implementation Details
-**Last Updated:** v2.0.4 (2026-02-07)
+**Last Updated:** v2.0.10 (2026-02-07)
 
 ## 1. Overview
 IndieGala uses a mix of modern and legacy layouts across its site sections. The userscript employs a multi-strategy approach to locate game containers, extract titles/IDs, and inject Steam data without breaking the site's layout or covering critical UI elements.
@@ -26,8 +26,10 @@ Bundles feature a complex layout with a top carousel and a bottom tier grid.
 ### 2.3 Product Detail Page (`/store/game/...`)
 Single game pages require a non-intrusive approach to avoid covering the game art or logos.
 - **Selector:** `.store-product-contents-aside-inner figure` (v2.0.4)
+- **Selector:** `.store-product-contents-aside-inner figure` (v2.0.4)
 - **Title Selector:** `h1[itemprop="name"]`
-- **Injection Strategy:** `Figure Overlay`
+- **External Title:** `true` (v2.0.10)
+  - **Reason:** The title `h1` is in the header, while the container `figure` is in the sidebar. They are not in the same DOM branch, so we use `document.querySelector` for the title.
   - **Why?** The previous header injection was disjointed. Moving to the main cover art provides a consistent "overlay" look similar to the store grid.
   - **Solution:** The script targets the `figure` element in the sidebar and appends the Steam overlay.
 
