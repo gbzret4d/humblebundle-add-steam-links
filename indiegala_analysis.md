@@ -1,5 +1,5 @@
 # IndieGala Site Analysis & Implementation Details
-**Last Updated:** v2.0.3 (2026-02-07)
+**Last Updated:** v2.0.4 (2026-02-07)
 
 ## 1. Overview
 IndieGala uses a mix of modern and legacy layouts across its site sections. The userscript employs a multi-strategy approach to locate game containers, extract titles/IDs, and inject Steam data without breaking the site's layout or covering critical UI elements.
@@ -25,11 +25,11 @@ Bundles feature a complex layout with a top carousel and a bottom tier grid.
 
 ### 2.3 Product Detail Page (`/store/game/...`)
 Single game pages require a non-intrusive approach to avoid covering the game art or logos.
-- **Selector:** `.store-product-header-flex` (v2.0.3)
+- **Selector:** `.store-product-contents-aside-inner figure` (v2.0.4)
 - **Title Selector:** `h1[itemprop="name"]`
-- **Injection Strategy:** `Simple Link` (Forced via `forceSimple: true`)
-  - **Why?** The header contains a `figure` with the game art. The standard "Figure Overlay" strategy would place the link ON TOP of the art, obscuring the logo/DLC banners.
-  - **Solution:** We force the script to append a text link (`[ STEAM 95% ]`) *next to* the H1 title instead.
+- **Injection Strategy:** `Figure Overlay`
+  - **Why?** The previous header injection was disjointed. Moving to the main cover art provides a consistent "overlay" look similar to the store grid.
+  - **Solution:** The script targets the `figure` element in the sidebar and appends the Steam overlay.
 
 ### 2.4 Library & Trades
 - **Library:** `li.profile-private-page-library-subitem`
@@ -63,8 +63,8 @@ selectors: [
     // Bundle Carousel
     { container: '.bundle-slider-game-info', title: '.bundle-slider-game-info-title' },
     
-    // Product Page (Force Simple Link)
-    { container: '.store-product-header-flex', title: 'h1[itemprop="name"]', forceSimple: true },
+    // Product Page (Cover Art Overlay)
+    { container: '.store-product-contents-aside-inner figure', title: 'h1[itemprop="name"]' },
     
     // Library
     { container: 'li.profile-private-page-library-subitem', title: '.profile-private-page-library-subitem-text' },

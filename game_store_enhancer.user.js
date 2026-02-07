@@ -142,9 +142,12 @@
                 // v1.41: Homepage "Results" Grid (e.g. Metro Awakening)
                 { container: '.main-list-results-item-margin', title: 'h3 a' },
                 // v1.42: Product Detail Page (e.g. Resident Evil Requiem)
-                { container: '.store-product-header-flex', title: 'h1[itemprop="name"]', forceSimple: true },
+                // v2.0.4: Moved to Cover Art container for better overlay positioning
+                //{ container: '.store-product-header-flex', title: 'h1[itemprop="name"]', forceSimple: true },
+                { container: '.store-product-contents-aside-inner figure', title: 'h1[itemprop="name"]' },
+
                 // v1.47: Fallback Product Page
-                { container: '.store-product-page-content', title: 'h1', forceSimple: true },
+                //{ container: '.store-product-page-content', title: 'h1', forceSimple: true }, // Legacy
                 { container: '.dev-cover-text-col', title: 'h1', forceSimple: true }, // Another potential container
                 // Bundle Tiers (Summary Grid)
                 { container: '.bundle-page-tier-item-col', title: '.bundle-page-tier-item-title' },
