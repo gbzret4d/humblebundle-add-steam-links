@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      2.0.5
+// @version      2.0.6
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -1171,17 +1171,34 @@
                         figure.appendChild(overlay);
 
                     } else {
+                    } else {
                         // Fallback: If neither Strategy fits (or forced Simple)
-                        // v2.0.3: Ensure visibility for forced simple links (Product Page)
+                        // v2.0.6: Product Page Badge Strategy (Next to "Steam Key" label)
                         if (forceSimple) {
+                            // Style as a dark badge
                             link.style.display = 'inline-block';
-                            link.style.marginLeft = '12px';
-                            link.style.color = '#fff'; // Default to white for headers
+                            link.style.marginLeft = '10px';
+                            link.style.color = '#fff';
                             link.style.fontWeight = 'bold';
-                            link.style.fontSize = '1.2rem'; // Match H1 size roughly
+                            link.style.fontSize = '14px'; // Slightly smaller than H1
                             link.style.verticalAlign = 'middle';
+                            link.style.backgroundColor = '#171a21'; // Steam Dark Blue/Black
+                            link.style.padding = '2px 8px';
+                            link.style.borderRadius = '4px';
+                            link.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
+                            link.style.lineHeight = 'normal';
+                            link.style.whiteSpace = 'nowrap'; // Prevent wrapping
+
+                            // Try to find the "Steam Key" label (em tag) inside H1
+                            const steamKeyLabel = nameEl.querySelector('em');
+                            if (steamKeyLabel) {
+                                steamKeyLabel.after(link);
+                            } else {
+                                nameEl.appendChild(link); // Append to H1 if label missing
+                            }
+                        } else {
+                            nameEl.after(link);
                         }
-                        nameEl.after(link);
                     }
                 } else {
                     // Fallback for non-IndieGala/Standard flow
