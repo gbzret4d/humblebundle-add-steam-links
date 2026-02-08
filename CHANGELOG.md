@@ -1,8 +1,29 @@
 # Changelog
-#> The `develop` branch has been updated to **v1.62**.Game Store Enhancer** userscript will be documented in this file.
+All notable changes to the **Game Store Enhancer** userscript will be documented in this file.
 
+The `develop` branch has been updated to **v2.0.23**.
 
+## [2.0.23] - 2026-02-07
+### Fixed
+- **IndieGala**: Fixed "Grayed Out" images by removing the background color from ignored items.
+- **IndieGala**: Corrected bundle detection for grid layouts (e.g., "Power Shock Bundle") by adding `.bundle-page-tier-item-inner`.
+- **IndieGala**: Fixed border spacing issues by switching to `box-shadow: inset`.
+- **IndieGala**: Moved overlay text (Steam logo/Review %) to the bottom of the card for better visibility.
+- **IndieGala**: Added support for Bundle Overview lists (`.container-item`).
 
+## [2.0.22] - 2026-02-07
+### Fixed
+- **Core**: Updated `fetchSteamAppCache` to use a raw GitHub URL, resolving 404 errors.
+- **IndieGala**: Removed strict opacity rules that caused images to appear grayed out.
+
+## [2.0.21] - 2026-02-07
+### Added
+- **IndieGala**: Added support for Library Bundle items.
+- **IndieGala**: Added support for Bundle Page Carousel.
+
+## [2.0.20] - 2026-02-07
+### Fixed
+- **Core**: Emergency fix for critical CSS syntax error that broke the script.
 
 ## [1.52] - 2026-02-06
 ### Added
