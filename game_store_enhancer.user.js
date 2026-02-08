@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      2.0.19
+// @version      2.0.20
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -410,6 +410,7 @@
             ${currentConfig.name === 'DailyIndieGame' ? 'border-bottom: 8px solid #1a1c1d !important;' : ''}
             background-color: rgba(90, 90, 90, 0.3) !important;
             box-shadow: inset 0 0 10px rgba(217, 83, 79, 0.4);
+        }
         .showcase-main-list-item figure,
         .main-list-item figure { 
              position: relative !important; 
