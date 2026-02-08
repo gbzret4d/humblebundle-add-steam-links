@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      2.0.28
+// @version      2.0.29
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -1402,7 +1402,7 @@
             store: {
                 urlRegex: /\/store/,
                 selectors: [
-                    { container: '.main-list-results-item', title: '.main-list-results-item-title a', img: '.main-list-results-item-img' }
+                    { container: '.main-list-results-item', title: '.main-list-results-item-title a', img: 'figure' }
                 ]
             },
             bundlesOverview: {
@@ -1414,9 +1414,10 @@
             bundleDetail: {
                 urlRegex: /\/bundle\/(?!s\/)/,
                 selectors: [
-                    { container: '.bundle-page-tier-item-col', title: '.bundle-page-tier-item-title', img: '.bundle-page-tier-item-image' },
-                    { container: '.bundle-page-tier-item-inner', title: '.title', img: 'figure' }, // PowerShock/Hentai
-                    { container: '.bundle-page-tier-item-inner', title: '.bundle-page-tier-item-title', img: '.bundle-page-tier-item-image' } // Generic Grid
+                    // v2.0.29: Generic "figure" is safer than specific image classes which vary
+                    { container: '.bundle-page-tier-item-col', title: '.bundle-page-tier-item-title', img: 'figure' },
+                    { container: '.bundle-page-tier-item-inner', title: '.title', img: 'figure' },
+                    { container: '.bundle-page-tier-item-inner', title: '.bundle-page-tier-item-title', img: 'figure' }
                 ]
             }
         },
@@ -1443,7 +1444,7 @@
                     position: absolute; bottom: 0; left: 0; width: 100%;
                     background: rgba(0,0,0,0.85); color: white; font-size: 11px;
                     padding: 3px 0; text-align: center; display: flex !important;
-                    justify-content: center; align-items: center; z-index: 50;
+                    justify-content: center; align-items: center; z-index: 100; /* v2.0.29: Boost Z-Index */
                     pointer-events: auto; text-decoration: none !important;
                 }
                 .ssl-steam-overlay img { width: 14px; height: 14px; vertical-align: middle; margin-right: 4px; }
