@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Game Store Enhancer (Dev)
 // @namespace    https://github.com/gbzret4d/game-store-enhancer
-// @version      2.0.17
+// @version      2.0.19
 // @description  Enhances Humble Bundle, Fanatical, DailyIndieGame, GOG, and IndieGala with Steam data (owned/wishlist status, reviews, age rating).
 // @author       gbzret4d
 // @match        https://www.humblebundle.com/*
@@ -441,6 +441,48 @@
         }
         
         .ssl-steam-overlay img { margin-right: 6px; }
+
+        /* v2.0.18: Stats Panel (Restored) */
+        #ssl-stats {
+            position: fixed;
+            top: 150px; /* Aligned with typical sidebar */
+            right: 20px;
+            background: rgba(23, 26, 33, 0.95);
+            color: #c7d5e0;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            z-index: 99999; /* Ensure it's on top of everything */
+            font-size: 12px;
+            line-height: 1.4;
+            min-width: 120px;
+            border: 1px solid #3c3d3e;
+            pointer-events: none; /* Let clicks pass through if needed, or consistent with user interaction? */
+        }
+        /* v2.0.18: Interaction allowed for panel? User didn't specify. Assuming info display only. */
+        #ssl-stats.interactive { pointer-events: auto; }
+        
+        #ssl-stats h4 { 
+            margin: 0 0 5px 0; 
+            color: #66c0f4; 
+            font-size: 13px; 
+            border-bottom: 1px solid #3c3d3e; 
+            padding-bottom: 3px; 
+        }
+        #ssl-stats div { display: flex; justify-content: space-between; }
+        #ssl-stats .val { font-weight: bold; color: #fff; margin-left: 10px; }
+        
+        /* v2.0.18: Fix Link Clickability on IndieGala */
+        .ssl-steam-overlay {
+            z-index: 1000 !important; /* Force on top of figure/borders */
+            cursor: pointer !important;
+            pointer-events: auto !important;
+        }
+        
+        /* v2.0.18: Fix spacing of Wishlisted items */
+        .ssl-bundle-wishlisted {
+             margin: 2px; /* Ensure 4px gap (2+2) between adjacent items */
+        }
     `;
     GM_addStyle(css);
 
@@ -527,7 +569,7 @@
             this.queue = []; // Clear pending
             console.error("Steam Request Queue STOPPED due to Rate Limit/Error.");
             // Try to notify UI
-            const statsPanel = document.getElementById('ssl-stats-panel');
+            const statsPanel = document.getElementById('ssl-stats');
             if (statsPanel) {
                 let errorDiv = document.getElementById('ssl-rate-limit-error');
                 if (!errorDiv) {
@@ -537,7 +579,7 @@
                     errorDiv.innerText = "⚠️ STEAM RATE LIMIT DETECTED. PAUSED.";
                     errorDiv.style.display = 'block';
                     statsPanel.appendChild(errorDiv);
-                    statsPanel.style.display = 'block'; // Force show
+                    // statsPanel.style.display = 'block'; // Panel is always visible?
                 }
             }
         }
@@ -1208,6 +1250,20 @@
                         overlay.style.pointerEvents = 'auto';
                         overlay.style.textDecoration = 'none';
 
+                        let statusHtml = '<span style="color:#fff; font-size:11px; font-weight:bold;">STEAM</span>';
+                        let overlayBg = 'rgba(0, 0, 0, 0.7)';
+
+                        if (appData.owned) {
+                            statusHtml = '<span style="color:#a4d007; font-weight:bold; font-size:11px;">OWNED</span>';
+                        } else if (appData.wishlisted) {
+                            statusHtml = '<span style="color:#66c0f4; font-weight:bold; font-size:11px;">WISHLIST</span>';
+                        } else if (appData.ignored !== undefined) {
+                            statusHtml = '<span style="color:#d9534f; font-weight:bold; font-size:11px;">IGNORED</span>';
+                            overlayBg = 'rgba(0, 0, 0, 0.85)'; // Darker for ignored
+                        }
+
+                        overlay.style.backgroundColor = overlayBg;
+
                         let reviewSnippet = '';
                         if (appData && appData.reviews && appData.reviews.percent) {
                             let color = '#a8926a';
@@ -1216,7 +1272,7 @@
                             reviewSnippet = ` <span style="color:${color}; margin-left:5px; font-weight:bold; font-size:11px;">${appData.reviews.percent}%</span>`;
                         }
 
-                        overlay.innerHTML = `<img src="https://store.steampowered.com/favicon.ico" class="ssl-icon-img" style="width:14px;height:14px;vertical-align:middle; margin-right:4px;"> <span style="color:#fff; font-size:11px; font-weight:bold;">STEAM</span>${reviewSnippet}`;
+                        overlay.innerHTML = `<img src="https://store.steampowered.com/favicon.ico" class="ssl-icon-img" style="width:14px;height:14px;vertical-align:middle; margin-right:4px;"> ${statusHtml}${reviewSnippet}`;
                         figure.appendChild(overlay);
 
                     } else {
@@ -1388,16 +1444,21 @@
                             const allIds = new Set();
 
                             // Pattern 1: IndieGala Bundle Images (e.g. /bundle_games/yyyymmdd/12345.jpg)
-                            const imageMatches = html.matchAll(/\/bundle_games\/\d+\/(\d+)\.jpg/g);
-                            for (const m of imageMatches) allIds.add(m[1]);
+                            const imageMatches = html.matchAll(/\/bundle_games\/(\d+\/)?(\d+)\.jpg/g); // v2.0.18 fix
+                            for (const m of imageMatches) allIds.add(m[2] || m[1]);
 
                             // Pattern 2: Steam Store Links (e.g. /app/12345)
-                            const linkMatches = html.matchAll(/store\.steampowered\.com\/app\/(\d+)/g);
-                            for (const m of linkMatches) allIds.add(m[1]);
+                            const linkMatches = html.matchAll(/store\.steampowered\.com\/(app|sub)\/(\d+)/g);
+                            for (const m of linkMatches) allIds.add(m[2]);
 
                             // Pattern 3: Steam Capsule/Header Images (often used in carousels)
-                            const capMatches = html.matchAll(/steam\/apps\/(\d+)\//g);
+                            // Matches: /apps/12345/ or /apps/12345.jpg
+                            const capMatches = html.matchAll(/steam\/apps\/(\d+)/g); // Simplified
                             for (const m of capMatches) allIds.add(m[1]);
+
+                            // Pattern 4: Generic AppID matches in data attributes (v2.0.18)
+                            const dataMatches = html.matchAll(/data-app-id="(\d+)"/g);
+                            for (const m of dataMatches) allIds.add(m[1]);
 
                             // Check Wishlist
                             fetchSteamUserData().then(userData => {
